@@ -17,10 +17,6 @@ public class Hooks {
         this.context = TestContext.getInstance();
     }
 
-    public Hooks(TestContext context) {
-        this.context = context;
-    }
-
     @Before
     public void beforeScenario(Scenario scenario) {
         // Reset context state before each scenario

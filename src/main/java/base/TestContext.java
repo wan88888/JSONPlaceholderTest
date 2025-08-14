@@ -3,6 +3,7 @@ package base;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.response.Response;
+import constants.TestConstants;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ public class TestContext {
 
     // Private constructor for singleton pattern
     private TestContext() {
-        this.baseUri = "https://jsonplaceholder.typicode.com"; // Default to JSONPlaceholder
+        this.baseUri = TestConstants.DEFAULT_BASE_URL;
         this.requestSpecification = buildRequestSpecification();
     }
 
@@ -28,20 +29,14 @@ public class TestContext {
         return instance;
     }
 
-    // Constructor with custom base URI
-    public TestContext(String baseUri) {
-        this.baseUri = baseUri;
-        this.requestSpecification = buildRequestSpecification();
-    }
-
     // Helper method to build request specification
     private RequestSpecification buildRequestSpecification() {
         RequestSpecBuilder builder = new RequestSpecBuilder()
                 .setBaseUri(this.baseUri)
-                .addHeader("Content-Type", "application/json");
+                .addHeader(TestConstants.CONTENT_TYPE_HEADER, TestConstants.CONTENT_TYPE_JSON);
         
         if (authToken != null && !authToken.isEmpty()) {
-            builder.addHeader("Authorization", "Bearer " + authToken);
+            builder.addHeader(TestConstants.AUTHORIZATION_HEADER, TestConstants.BEARER_PREFIX + authToken);
         }
         
         return builder.build();
@@ -78,11 +73,6 @@ public class TestContext {
         return baseUri;
     }
 
-    // Method to clear all saved data (useful for test cleanup)
-    public void clearSavedData() {
-        savedData.clear();
-    }
-
     // Method to reset context (useful between test scenarios)
     public void reset() {
         lastResponse = null;
@@ -99,6 +89,11 @@ public class TestContext {
     // Method to remove specific attribute
     public void removeAttribute(String key) {
         savedData.remove(key);
+    }
+
+    // Method to clear all saved data (useful for test cleanup)
+    public void clearSavedData() {
+        savedData.clear();
     }
 
     public String getAuthToken() {

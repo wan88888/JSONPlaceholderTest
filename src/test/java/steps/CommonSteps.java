@@ -17,10 +17,6 @@ public class CommonSteps {
         this.context = TestContext.getInstance();
     }
 
-    public CommonSteps(TestContext context) {
-        this.context = context;
-    }
-
     @Given("I set base URL to {string}")
     public void i_set_base_url_to(String baseUrl) {
         baseURI = baseUrl;

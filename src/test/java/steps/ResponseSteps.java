@@ -21,10 +21,6 @@ public class ResponseSteps {
         this.context = TestContext.getInstance();
     }
 
-    public ResponseSteps(TestContext context) {
-        this.context = context;
-    }
-
     @Then("the response status code should be {int}")
     public void the_response_status_code_should_be(int expectedStatusCode) {
         assertThat(context.getLastResponse().getStatusCode()).isEqualTo(expectedStatusCode);
@@ -32,39 +28,34 @@ public class ResponseSteps {
 
     @Then("the response should be a JSON array")
     public void the_response_should_be_a_json_array() {
-        JsonPath jsonPath = context.getLastResponse().jsonPath();
-        assertThat(jsonPath.getList("")).isNotNull();
+        List<Object> items = getResponseJsonPath().getList("");
+        assertThat(items).isNotNull();
     }
 
     @Then("the response array should have {int} items")
     public void the_response_array_should_have_items(int expectedCount) {
-        JsonPath jsonPath = context.getLastResponse().jsonPath();
-        List<Object> items = jsonPath.getList("");
+        List<Object> items = getResponseJsonPath().getList("");
         assertThat(items.size()).isEqualTo(expectedCount);
     }
 
     @Then("the response should contain:")
     public void the_response_should_contain(DataTable dataTable) {
         Map<String, String> expectedData = dataTable.asMap(String.class, String.class);
-        JsonPath jsonPath = context.getLastResponse().jsonPath();
+        JsonPath jsonPath = getResponseJsonPath();
         
-        for (Map.Entry<String, String> entry : expectedData.entrySet()) {
-            Object actualValue = jsonPath.get(entry.getKey());
-            String expectedValue = entry.getValue();
-            
+        expectedData.forEach((key, expectedValue) -> {
+            Object actualValue = jsonPath.get(key);
             if (actualValue != null) {
-                // Convert both to strings for comparison
-                String actualString = actualValue.toString();
-                assertThat(actualString).isEqualTo(expectedValue);
+                assertThat(actualValue.toString()).isEqualTo(expectedValue);
             } else {
-                throw new AssertionError("Field '" + entry.getKey() + "' not found in response");
+                throw new AssertionError("Field '" + key + "' not found in response");
             }
-        }
+        });
     }
 
     @Then("all items in response should have {string} equal to {string}")
     public void all_items_in_response_should_have_field_equal_to(String fieldName, String expectedValue) {
-        JsonPath jsonPath = context.getLastResponse().jsonPath();
+        JsonPath jsonPath = getResponseJsonPath();
         List<Object> items = jsonPath.getList("");
         
         for (int i = 0; i < items.size(); i++) {
@@ -75,7 +66,14 @@ public class ResponseSteps {
 
     @Then("Save attribute {string} as {string}")
     public void save_attribute_as(String jsonPath, String key) {
-        Object value = context.getLastResponse().jsonPath().get(jsonPath);
+        Object value = getResponseJsonPath().get(jsonPath);
         context.saveAttribute(key, value);
+    }
+
+    /**
+     * 获取响应的JsonPath对象的通用方法
+     */
+    private JsonPath getResponseJsonPath() {
+        return context.getLastResponse().jsonPath();
     }
 }

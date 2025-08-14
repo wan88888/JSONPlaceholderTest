@@ -1,6 +1,7 @@
 package steps;
 
 import base.TestContext;
+import constants.TestConstants;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.When;
 import io.restassured.response.Response;
@@ -22,36 +23,11 @@ public class ApiSteps {
         this.context = TestContext.getInstance();
     }
 
-    public ApiSteps(TestContext context) {
-        this.context = context;
-    }
-
     @When("I send a {string} request to {string} with body:")
     public void i_send_request_with_body(String method, String endpoint, DataTable dataTable) {
         List<Map<String, String>> data = dataTable.asMaps(String.class, String.class);
         Map<String, Object> requestBody = new HashMap<>(data.get(0));
-        endpoint = replacePlaceholders(endpoint);
-
-        Response response;
-        switch (method.toUpperCase()) {
-            case "POST":
-                response = given().contentType("application/json")
-                        .body(requestBody)
-                        .when().post(endpoint);
-                break;
-            case "PUT":
-                response = given().contentType("application/json")
-                        .body(requestBody)
-                        .when().put(endpoint);
-                break;
-            case "PATCH":
-                response = given().contentType("application/json")
-                        .body(requestBody)
-                        .when().patch(endpoint);
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported HTTP method: " + method);
-        }
+        Response response = sendRequestWithBody(method, endpoint, requestBody);
         context.setLastResponse(response);
     }
 
@@ -81,11 +57,7 @@ public class ApiSteps {
     public void i_send_a_post_request_to_with_body(String endpoint, DataTable dataTable) {
         List<Map<String, String>> data = dataTable.asMaps(String.class, String.class);
         Map<String, Object> requestBody = new HashMap<>(data.get(0));
-        endpoint = replacePlaceholders(endpoint);
-        
-        Response response = given().contentType("application/json")
-                .body(requestBody)
-                .when().post(endpoint);
+        Response response = sendRequestWithBody("POST", endpoint, requestBody);
         context.setLastResponse(response);
     }
 
@@ -93,11 +65,7 @@ public class ApiSteps {
     public void i_send_a_put_request_to_with_body(String endpoint, DataTable dataTable) {
         List<Map<String, String>> data = dataTable.asMaps(String.class, String.class);
         Map<String, Object> requestBody = new HashMap<>(data.get(0));
-        endpoint = replacePlaceholders(endpoint);
-        
-        Response response = given().contentType("application/json")
-                .body(requestBody)
-                .when().put(endpoint);
+        Response response = sendRequestWithBody("PUT", endpoint, requestBody);
         context.setLastResponse(response);
     }
 
@@ -105,18 +73,41 @@ public class ApiSteps {
     public void i_send_a_patch_request_to_with_body(String endpoint, DataTable dataTable) {
         List<Map<String, String>> data = dataTable.asMaps(String.class, String.class);
         Map<String, Object> requestBody = new HashMap<>(data.get(0));
-        endpoint = replacePlaceholders(endpoint);
-        
-        Response response = given().contentType("application/json")
-                .body(requestBody)
-                .when().patch(endpoint);
+        Response response = sendRequestWithBody("PATCH", endpoint, requestBody);
         context.setLastResponse(response);
     }
 
+    /**
+     * 发送带有请求体的HTTP请求的通用方法
+     */
+    private Response sendRequestWithBody(String method, String endpoint, Map<String, Object> requestBody) {
+        endpoint = replacePlaceholders(endpoint);
+        
+        switch (method.toUpperCase()) {
+            case TestConstants.HTTP_POST:
+                return given().contentType(TestConstants.CONTENT_TYPE_JSON)
+                        .body(requestBody)
+                        .when().post(endpoint);
+            case TestConstants.HTTP_PUT:
+                return given().contentType(TestConstants.CONTENT_TYPE_JSON)
+                        .body(requestBody)
+                        .when().put(endpoint);
+            case TestConstants.HTTP_PATCH:
+                return given().contentType(TestConstants.CONTENT_TYPE_JSON)
+                        .body(requestBody)
+                        .when().patch(endpoint);
+            default:
+                throw new IllegalArgumentException("Unsupported HTTP method: " + method);
+        }
+    }
+
+    /**
+     * 替换端点中的占位符
+     */
     private String replacePlaceholders(String endpoint) {
         for (Map.Entry<String, Object> entry : context.getSavedData().entrySet()) {
             if (entry.getValue() != null) {
-                endpoint = endpoint.replace("{" + entry.getKey() + "}", entry.getValue().toString());
+                endpoint = endpoint.replace(TestConstants.PLACEHOLDER_START + entry.getKey() + TestConstants.PLACEHOLDER_END, entry.getValue().toString());
             }
         }
         return endpoint;

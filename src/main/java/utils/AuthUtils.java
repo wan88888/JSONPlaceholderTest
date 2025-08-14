@@ -1,7 +1,9 @@
 package utils;
 
+import constants.TestConstants;
+
 public class AuthUtils {
     public static String createAuthToken() {
-         return "special-key";  // API authorize key
+        return TestConstants.DEFAULT_AUTH_TOKEN;
     }
 }
