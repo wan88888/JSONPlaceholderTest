@@ -10,6 +10,8 @@
 - 🏗️ **模块化设计**: 步骤定义按功能模块组织
 - 🔄 **状态管理**: 支持测试场景间的数据共享
 - ✅ **Maven 构建**: 标准的 Maven 项目结构
+- 🎯 **常量管理**: 集中化的配置常量管理
+- 🚀 **代码优化**: 消除硬编码，提升可维护性
 
 ## 环境要求
 
@@ -54,8 +56,11 @@ JSONPlaceholderTest/
 │   │   ├── base/
 │   │   │   ├── TestContext.java      # 测试上下文管理
 │   │   │   └── Hooks.java            # 测试生命周期钩子
+│   │   ├── constants/
+│   │   │   └── TestConstants.java    # 项目常量管理
 │   │   └── utils/
-│   │       └── AuthUtils.java        # 认证工具类
+│   │       ├── AuthUtils.java        # 认证工具类
+│   │       └── ExtentManager.java    # 报告管理工具
 │   └── test/
 │       ├── java/
 │       │   ├── runner/
@@ -73,7 +78,9 @@ JSONPlaceholderTest/
 ├── pom.xml                          # Maven配置文件
 ├── .gitignore                       # Git忽略文件
 ├── README.md                        # 项目说明文档
-└── STEP_DEFINITIONS_GUIDE.md        # 步骤定义组织指南
+├── STEP_DEFINITIONS_GUIDE.md        # 步骤定义组织指南
+├── CODE_OPTIMIZATION_SUMMARY.md     # 代码优化总结
+└── ADDITIONAL_OPTIMIZATION_SUMMARY.md # 进一步优化总结
 ```
 
 ## 核心组件说明
@@ -82,16 +89,23 @@ JSONPlaceholderTest/
 - 单例模式设计，确保测试状态在步骤间共享
 - 支持动态配置 API 基础 URL
 - 提供请求/响应管理和数据存储功能
+- 优化的构造函数设计，消除冗余代码
+
+### 常量管理 (TestConstants)
+- 集中管理所有项目常量（API URL、报告配置、HTTP方法等）
+- 消除硬编码值，提升代码可维护性
+- 类型安全的常量定义，确保配置一致性
 
 ### 步骤定义模块化
 - **CommonSteps**: 基础配置、认证等通用功能
-- **ApiSteps**: HTTP 请求相关操作
-- **ResponseSteps**: 响应验证和断言
+- **ApiSteps**: HTTP 请求相关操作，包含优化的请求处理方法
+- **ResponseSteps**: 响应验证和断言，包含优化的JsonPath处理
 
 ### 测试报告
 - **ExtentReports**: 提供丰富的 HTML 测试报告
 - **Cucumber Reports**: 标准的 Cucumber 测试报告
 - 支持测试结果截图和日志记录
+- 集中化的报告配置管理
 
 ## 测试场景
 
@@ -131,12 +145,20 @@ JSONPlaceholderTest/
 - `cucumber-junit`: Cucumber JUnit 集成
 - `rest-assured`: REST API 测试库
 - `extentreports`: 测试报告生成
-- `truth`: Google Truth 断言库
+- `truth`: Google Truth 断言库（已优化scope为test）
+
+### 常量配置
+所有配置常量集中在 `TestConstants.java` 中管理：
+- **API配置**: 基础URL、Content-Type、认证头等
+- **报告配置**: 文件路径、标题、环境信息等
+- **HTTP方法**: 标准化的HTTP方法常量
+- **文件路径**: 统一的路径配置管理
 
 ### 测试配置
 - **并行执行**: 支持多线程测试执行
 - **标签过滤**: 支持基于标签的测试筛选
 - **环境配置**: 支持不同环境的配置切换
+- **集中化管理**: 所有配置通过常量类统一管理
 
 ## 最佳实践
 
@@ -145,6 +167,24 @@ JSONPlaceholderTest/
 3. **合理使用标签**: 为测试场景添加有意义的标签
 4. **数据驱动测试**: 使用 Scenario Outline 进行参数化测试
 5. **定期重构**: 保持代码的整洁和可维护性
+6. **常量管理**: 避免硬编码，使用 TestConstants 类管理配置
+7. **单例模式**: 合理使用单例模式管理共享状态
+8. **代码复用**: 提取公共方法，减少重复代码
+9. **依赖管理**: 正确设置Maven依赖的scope
+
+## 代码优化历史
+
+项目经过多轮优化，详细信息请参考：
+- [CODE_OPTIMIZATION_SUMMARY.md](CODE_OPTIMIZATION_SUMMARY.md) - 初始代码优化总结
+- [ADDITIONAL_OPTIMIZATION_SUMMARY.md](ADDITIONAL_OPTIMIZATION_SUMMARY.md) - 进一步优化总结
+
+### 主要优化成果
+- ✅ 消除了60+行冗余代码
+- ✅ 移除了18个硬编码值
+- ✅ 引入了集中化常量管理
+- ✅ 优化了构造函数设计
+- ✅ 提取了公共方法，减少重复
+- ✅ 改进了依赖管理配置
 
 ## 故障排除
 
@@ -159,10 +199,14 @@ A: 确保步骤定义文件在正确的包路径下，并且方法上有正确�
 **Q: 测试报告没有生成**
 A: 检查 `extent-config.xml` 和 `extent.properties` 配置文件
 
+**Q: 常量类找不到**
+A: 确保 `TestConstants.java` 在正确的 `constants` 包下，并且已正确导入
+
 ### 调试技巧
 - 使用 `@Before` 和 `@After` 钩子进行调试
 - 在步骤定义中添加日志输出
 - 使用 IDE 的调试功能逐步执行
+- 检查常量配置是否正确
 
 ## 贡献指南
 
